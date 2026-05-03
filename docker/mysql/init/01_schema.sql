@@ -16,7 +16,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 CREATE TABLE customers
 (
-    customer_id    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     public_code    CHAR(12)        NOT NULL,
     email          VARCHAR(320)    NOT NULL,
     phone          CHAR(11)        NULL,
@@ -27,7 +27,7 @@ CREATE TABLE customers
     is_active      BOOLEAN         NOT NULL DEFAULT TRUE,
     registered_at  TIMESTAMP(6)    NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     preferences    JSON            NOT NULL,
-    PRIMARY KEY (customer_id),
+    PRIMARY KEY (id),
     UNIQUE KEY uq_customers_public_code (public_code),
     UNIQUE KEY uq_customers_email (email),
     CHECK (rating <= 5),
@@ -36,7 +36,7 @@ CREATE TABLE customers
 
 CREATE TABLE products
 (
-    product_id       BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    id               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     sku              VARCHAR(32)     NOT NULL,
     title            VARCHAR(160)    NOT NULL,
     description      TEXT            NULL,
@@ -51,7 +51,7 @@ CREATE TABLE products
     color            VARCHAR(32) GENERATED ALWAYS AS
         (JSON_UNQUOTE(JSON_EXTRACT(attributes, '$.color'))) STORED,
     created_at       DATETIME(6)     NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-    PRIMARY KEY (product_id),
+    PRIMARY KEY (id),
     UNIQUE KEY uq_products_sku (sku),
     KEY ix_products_category (category),
     KEY ix_products_color (color),
@@ -62,7 +62,7 @@ CREATE TABLE products
 
 CREATE TABLE orders
 (
-    order_id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    id                 BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     order_number       CHAR(14)        NOT NULL,
     customer_id        BIGINT UNSIGNED NOT NULL,
     status             ENUM ('new', 'paid', 'packed', 'shipped', 'completed', 'cancelled') NOT NULL DEFAULT 'new',
@@ -75,11 +75,11 @@ CREATE TABLE orders
     paid_at            TIMESTAMP(6)    NULL DEFAULT NULL,
     delivery_details   JSON            NOT NULL,
     customer_comment   VARCHAR(500)    NULL,
-    PRIMARY KEY (order_id),
+    PRIMARY KEY (id),
     UNIQUE KEY uq_orders_order_number (order_number),
     KEY ix_orders_customer_created (customer_id, created_at),
     CONSTRAINT fk_orders_customer
-        FOREIGN KEY (customer_id) REFERENCES customers (customer_id)
+        FOREIGN KEY (customer_id) REFERENCES customers (id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
     CHECK (total_amount >= 0),
@@ -89,7 +89,7 @@ CREATE TABLE orders
 
 CREATE TABLE order_items
 (
-    order_item_id   BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     order_id        BIGINT UNSIGNED NOT NULL,
     product_id      BIGINT UNSIGNED NOT NULL,
     quantity        SMALLINT UNSIGNED NOT NULL,
@@ -97,15 +97,15 @@ CREATE TABLE order_items
     discount_percent DECIMAL(5, 2)  NOT NULL DEFAULT 0.00,
     line_total      DECIMAL(12, 2) GENERATED ALWAYS AS
         (ROUND(quantity * unit_price * (1 - discount_percent / 100), 2)) STORED,
-    PRIMARY KEY (order_item_id),
+    PRIMARY KEY (id),
     UNIQUE KEY uq_order_items_order_product (order_id, product_id),
     KEY ix_order_items_product (product_id),
     CONSTRAINT fk_order_items_order
-        FOREIGN KEY (order_id) REFERENCES orders (order_id)
+        FOREIGN KEY (order_id) REFERENCES orders (id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
     CONSTRAINT fk_order_items_product
-        FOREIGN KEY (product_id) REFERENCES products (product_id)
+        FOREIGN KEY (product_id) REFERENCES products (id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
     CHECK (quantity > 0),
@@ -115,16 +115,16 @@ CREATE TABLE order_items
 
 CREATE TABLE order_events
 (
-    event_id   BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     order_id   BIGINT UNSIGNED NOT NULL,
     event_type VARCHAR(40)     NOT NULL,
     source_ip  VARBINARY(16)   NULL,
     payload    JSON            NOT NULL,
     created_at TIMESTAMP(6)    NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-    PRIMARY KEY (event_id),
+    PRIMARY KEY (id),
     KEY ix_order_events_order_created (order_id, created_at),
     CONSTRAINT fk_order_events_order
-        FOREIGN KEY (order_id) REFERENCES orders (order_id)
+        FOREIGN KEY (order_id) REFERENCES orders (id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
     CHECK (JSON_TYPE(payload) = 'OBJECT')

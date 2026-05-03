@@ -4,7 +4,7 @@ USE mysql_datatypes;
 
 INSERT INTO order_events (order_id, event_type, source_ip, payload)
 SELECT
-    o.order_id,
+    o.id,
     'json_checked',
     INET6_ATON('10.10.0.5'),
     JSON_OBJECT(
@@ -16,7 +16,7 @@ WHERE o.order_number = 'ORD-2026-0001'
   AND NOT EXISTS (
       SELECT 1
       FROM order_events AS e
-      WHERE e.order_id = o.order_id
+      WHERE e.order_id = o.id
         AND e.event_type = 'json_checked'
   );
 
@@ -26,14 +26,14 @@ WHERE email = 'anna.serova@example.com'
   AND JSON_CONTAINS(JSON_EXTRACT(preferences, '$.favorite_categories'), JSON_QUOTE('books')) = 0;
 
 SELECT
-    product_id,
+    id,
     sku,
     title,
     color AS indexed_color,
     JSON_UNQUOTE(JSON_EXTRACT(attributes, '$.dimensions.width_mm')) AS width_mm,
     JSON_EXTRACT(attributes, '$.features') AS features
 FROM products
-ORDER BY product_id;
+ORDER BY id;
 
 SELECT
     order_number,
@@ -41,7 +41,7 @@ SELECT
     delivery_details->>'$.courier.company' AS courier_company,
     delivery_details->>'$.coordinates.lat' AS latitude
 FROM orders
-WHERE delivery_details->>'$.city' = 'Москва';
+WHERE delivery_details->>'$.city' = 'Moscow';
 
 SELECT
     c.full_name,
@@ -54,7 +54,7 @@ JOIN JSON_TABLE(
         category VARCHAR(40) PATH '$'
     )
 ) AS preferred
-ORDER BY c.customer_id, preferred.category;
+ORDER BY c.id, preferred.category;
 
 SELECT
     sku,
@@ -67,4 +67,4 @@ SELECT
     INET6_NTOA(source_ip) AS source_ip,
     JSON_PRETTY(payload) AS payload
 FROM order_events
-ORDER BY event_id;
+ORDER BY id;
