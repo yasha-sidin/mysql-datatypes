@@ -1,0 +1,26 @@
+name: mysql-datatypes
+
+services:
+  mysql:
+    image: mysql:${MYSQL_VERSION:-9.7.0}
+    container_name: mysql-datatypes
+    restart: unless-stopped
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-mysql_datatypes}
+      MYSQL_USER: ${MYSQL_USER:-otus}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-otus_password}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$${MYSQL_ROOT_PASSWORD}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  mysql_data:

@@ -1,0 +1,21 @@
+# IDE settings
+.idea/
+.vscode/
+.example-otus-mysql-docker/
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+tmp/
+temp/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
