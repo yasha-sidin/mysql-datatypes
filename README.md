@@ -234,32 +234,14 @@ FROM order_events;
 
 ## Скриншоты проверки
 
-Скриншоты складываются в `snapshots`. Чтобы README сразу подтянул изображения, названия файлов лучше оставить такими:
+В `snapshots` лежат три скриншота с проверкой базы:
 
 - `snapshots/01-tables.png` - список таблиц после `SHOW TABLES;`;
 - `snapshots/02-columns.png` - типы колонок, например `SHOW COLUMNS FROM customers;` и `SHOW COLUMNS FROM products;`;
-- `snapshots/03-json-query.png` - выборка JSON-полей из `orders.delivery_details` или вывод `make json`;
-- `snapshots/04-keys.png` - проверка ключей: видно, что первичные ключи называются `id`, а внешние - `customer_id`, `order_id`, `product_id`.
-
-Для скриншота с ключами удобно выполнить такой запрос:
-
-```sql
-SELECT
-    TABLE_NAME,
-    COLUMN_NAME,
-    CONSTRAINT_NAME,
-    REFERENCED_TABLE_NAME,
-    REFERENCED_COLUMN_NAME
-FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-WHERE TABLE_SCHEMA = DATABASE()
-  AND (CONSTRAINT_NAME = 'PRIMARY' OR REFERENCED_TABLE_NAME IS NOT NULL)
-ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION;
-```
+- `snapshots/03-json-query.png` - вывод `make json`: JSON-поля, `JSON_TABLE`, поиск по JSON-массиву и IP-адреса.
 
 ![Список таблиц](snapshots/01-tables.png)
 
 ![Типы колонок](snapshots/02-columns.png)
 
 ![JSON-запросы](snapshots/03-json-query.png)
-
-![Первичные и внешние ключи](snapshots/04-keys.png)
