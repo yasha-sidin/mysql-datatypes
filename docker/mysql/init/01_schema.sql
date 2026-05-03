@@ -50,11 +50,25 @@ CREATE TABLE products
     attributes       JSON            NOT NULL,
     color            VARCHAR(32) GENERATED ALWAYS AS
         (JSON_UNQUOTE(JSON_EXTRACT(attributes, '$.color'))) STORED,
+    search_properties TEXT GENERATED ALWAYS AS
+        (
+            CONCAT_WS(
+                ' ',
+                JSON_UNQUOTE(JSON_EXTRACT(attributes, '$.color')),
+                JSON_UNQUOTE(JSON_EXTRACT(attributes, '$.material')),
+                JSON_UNQUOTE(JSON_EXTRACT(attributes, '$.features')),
+                JSON_UNQUOTE(JSON_EXTRACT(attributes, '$.warranty_months')),
+                JSON_UNQUOTE(JSON_EXTRACT(attributes, '$.duration_hours')),
+                JSON_UNQUOTE(JSON_EXTRACT(attributes, '$.access_days'))
+            )
+        ) STORED,
     created_at       DATETIME(6)     NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     PRIMARY KEY (id),
     UNIQUE KEY uq_products_sku (sku),
-    KEY ix_products_category (category),
+    UNIQUE KEY uq_products_price (price),
+    KEY ix_products_category_price (category, price),
     KEY ix_products_color (color),
+    FULLTEXT KEY ft_products_search (title, description, search_properties),
     CHECK (price >= 0),
     CHECK (stock_quantity >= 0),
     CHECK (JSON_TYPE(attributes) = 'OBJECT')
@@ -78,6 +92,7 @@ CREATE TABLE orders
     PRIMARY KEY (id),
     UNIQUE KEY uq_orders_order_number (order_number),
     KEY ix_orders_customer_created (customer_id, created_at),
+    KEY ix_orders_status_created (status, created_at),
     CONSTRAINT fk_orders_customer
         FOREIGN KEY (customer_id) REFERENCES customers (id)
         ON UPDATE CASCADE
